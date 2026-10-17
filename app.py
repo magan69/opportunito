@@ -51,11 +51,23 @@ def run_pipeline(p, progress):
             if r.url not in urls:
                 urls.append(r.url)
     urls = urls[:14]
-    st.session_state["stats"] = {"searches": len(queries), "pages": len(urls)}
-    progress.progress(0.25, text=f"TinyFish Search found {len(urls)} live pages. Reading them with TinyFish Fetch...")
+    progress.progress(0.2, text=f"TinyFish Search found {len(urls)} live pages. Reading them with TinyFish Fetch...")
 
-    # 2. FETCH (TinyFish)
-    pages = tf.fetch.get_contents(urls=urls, format="markdown")
+    # 2. FETCH (TinyFish) - max 10 URLs per call, so fetch in batches
+    all_pages = []
+    for start in range(0, len(urls), 10):
+        batch = urls[start:start + 10]
+        try:
+            fetched = tf.fetch.get_contents(urls=batch, format="markdown")
+            all_pages.extend(fetched.results)
+        except Exception as e:
+            print("Fetch failed for a batch:", e)
+
+    st.session_state["stats"] = {
+        "searches": len(queries),
+        "found": len(urls),
+        "read": len(all_pages),
+    }
     progress.progress(0.5, text="Analysing with Gemini...")
 
     # 3. EXTRACT + MATCH (Gemini)
@@ -64,8 +76,8 @@ def run_pipeline(p, progress):
         f"State: {p['state']}; Family income per year: {p['income']}; Interests: {p['interests']}"
     )
     items = []
-    total = max(len(pages.results), 1)
-    for i, page in enumerate(pages.results):
+    total = max(len(all_pages), 1)
+    for i, page in enumerate(all_pages):
         text = (page.text or "")[:15000]
         prompt = f"""Today's date is {date.today()}.
 Extract the opportunity details from this web page and score how well it fits the student.
@@ -134,7 +146,10 @@ if go:
 
 stats = st.session_state.get("stats")
 if stats:
-    st.info(f"TinyFish ran {stats['searches']} live searches and fetched {stats['pages']} pages for this result.")
+    st.info(
+        f"TinyFish ran {stats['searches']} live searches, found {stats['found']} pages "
+        f"and read {stats['read']} of them for this result."
+    )
 
 results = st.session_state.get("results")
 if results is not None:
