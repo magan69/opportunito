@@ -59,7 +59,7 @@ PAGE TEXT:
     for attempt in range(3):
         try:
             response = gemini.models.generate_content(
-                model="gemini-3.8-flash",
+                model="gemini-3.5-flash-lite",,
                 contents=prompt,
                 config={
                     "response_mime_type": "application/json",
@@ -93,7 +93,7 @@ def run_pipeline(p, progress):
         for u in url_list:
             if u not in urls:
                 urls.append(u)
-    urls = urls[:10]  # TinyFish Fetch allows 10 URLs per call
+    urls = urls[:6]  # TinyFish Fetch allows 6 URLs per call
     progress.progress(0.25, text=f"TinyFish Search found {len(urls)} live pages. Reading them with TinyFish Fetch...")
 
     # 2. FETCH (TinyFish) - one call
@@ -113,7 +113,7 @@ def run_pipeline(p, progress):
     items = []
     total = max(len(all_pages), 1)
     done = 0
-    with ThreadPoolExecutor(max_workers=4) as pool:
+    with ThreadPoolExecutor(max_workers=2) as pool:
         futures = [
             pool.submit(analyse_page, pg.url, (pg.text or "")[:8000], profile_text)
             for pg in all_pages
