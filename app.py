@@ -33,17 +33,24 @@ def days_left(deadline):
 
 def run_pipeline(p, progress):
     # 1. SEARCH (TinyFish)
-    queries = [
-        f"{p['course']} scholarship India {p['category']} category 2026 last date apply",
-        f"{p['interests']} internship OR fellowship for {p['year']} students India 2026 apply",
+        queries = [
+        f"{p['course']} scholarship India {p['category']} category 2026-27 apply now last date",
+        f"scholarship for {p['year']} year {p['course']} students India 2026 apply online",
+        f"{p['state']} state government scholarship {p['category']} students 2026-27 apply",
+        f"{p['interests']} internship for {p['year']} year students India 2026 apply",
+        f"{p['interests']} fellowship OR competition OR hackathon students India 2026 registration open",
     ]
     urls = []
     for q in queries:
-        res = tf.search.query(query=q, location="IN")
-        for r in res.results[:4]:
+        try:
+            res = tf.search.query(query=q, location="IN")
+        except Exception as e:
+            print("Search failed:", q, e)
+            continue
+        for r in res.results[:5]:
             if r.url not in urls:
                 urls.append(r.url)
-    urls = urls[:8]
+    urls = urls[:14]
     progress.progress(0.25, text=f"Found {len(urls)} pages. Reading them...")
 
     # 2. FETCH (TinyFish)
@@ -90,12 +97,13 @@ PAGE TEXT:
         time.sleep(2)  # stay within free limits
 
     # 4. Filter + rank
-    good = []
+        good = []
     for it in items:
         d = days_left(it["deadline"])
         if it["is_opportunity"] and (d is None or d >= 0):
             it["days_left"] = d
             good.append(it)
+    good = [g for g in good if g["match_score"] >= 20]
     good.sort(key=lambda x: x["match_score"], reverse=True)
     return good
 
