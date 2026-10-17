@@ -11,7 +11,7 @@ from tinyfish import TinyFish
 
 # ---------- Data shape Gemini must return ----------
 class Opportunity(BaseModel):
-    is_opportunity: bool = Field(description="True only if this page describes a scholarship, internship, fellowship or competition students can apply to.")
+    is_opportunity: bool = Field(description="True if this page describes a specific scholarship, internship, fellowship, competition or hackathon that students can apply to. List pages that name several opportunities with details count too.")
     title: str = Field(description="Name of the opportunity.")
     deadline: Optional[str] = Field(description="Last date to apply as YYYY-MM-DD, or null if the page does not state one.")
     eligibility: str = Field(description="Who can apply, in one or two sentences.")
@@ -31,7 +31,28 @@ def days_left(deadline):
     except ValueError:
         return None
 
+def analyse_page(prompt):
+    """Ask Gemini, and retry up to 3 times if it says 'too many requests'."""
+    last_error = None
+    for attempt in range(3):
+        try:
+            response = gemini.models.generate_content(
+                model="gemini-3.8-flash",
+                contents=prompt,
+                config={
+                    "response_mime_type": "application/json",
+                    "response_schema": Opportunity,
+                },
+            )
+            return Opportunity.model_validate_json(response.text), None
+        except Exception as e:
+            last_error = str(e)
+            time.sleep(8 * (attempt + 1))  # wait longer each time
+    return None, last_error
+
 def run_pipeline(p, progress):
+    debug = {"errors": [], "not_opportunity": 0, "expired": 0, "low_score": 0}
+
     # 1. SEARCH (TinyFish)
     queries = [
         f"{p['course']} scholarship India {p['category']} category 2026-27 apply now last date",
@@ -62,12 +83,6 @@ def run_pipeline(p, progress):
             all_pages.extend(fetched.results)
         except Exception as e:
             print("Fetch failed for a batch:", e)
-
-    st.session_state["stats"] = {
-        "searches": len(queries),
-        "found": len(urls),
-        "read": len(all_pages),
-    }
     progress.progress(0.5, text="Analysing with Gemini...")
 
     # 3. EXTRACT + MATCH (Gemini)
@@ -78,10 +93,10 @@ def run_pipeline(p, progress):
     items = []
     total = max(len(all_pages), 1)
     for i, page in enumerate(all_pages):
-        text = (page.text or "")[:15000]
+        text = (page.text or "")[:12000]
         prompt = f"""Today's date is {date.today()}.
 Extract the opportunity details from this web page and score how well it fits the student.
-If the page is not a real opportunity students can apply to, set is_opportunity to false.
+If the page is not about an opportunity students can apply to, set is_opportunity to false.
 If eligibility clearly excludes the student (income, course, year, category), give a low score.
 Only give a deadline if the page states one. Never guess.
 
@@ -91,33 +106,39 @@ PAGE URL: {page.url}
 PAGE TEXT:
 {text}
 """
-        try:
-            response = gemini.models.generate_content(
-                model="gemini-3.8-flash",
-                contents=prompt,
-                config={
-                    "response_mime_type": "application/json",
-                    "response_schema": Opportunity,
-                },
-            )
-            item = Opportunity.model_validate_json(response.text)
+        item, err = analyse_page(prompt)
+        if item is None:
+            debug["errors"].append(f"{page.url} -> {err[:200]}")
+        else:
             data = item.model_dump()
             data["source_url"] = page.url
             items.append(data)
-        except Exception as e:
-            print("Skipped", page.url, "->", e)
         progress.progress(0.5 + 0.5 * (i + 1) / total, text=f"Analysed {i + 1} of {total} pages")
-        time.sleep(2)  # stay within free limits
+        time.sleep(1.5)
 
     # 4. Filter + rank
     good = []
     for it in items:
         d = days_left(it["deadline"])
-        if it["is_opportunity"] and (d is None or d >= 0):
+        if not it["is_opportunity"]:
+            debug["not_opportunity"] += 1
+        elif d is not None and d < 0:
+            debug["expired"] += 1
+        elif it["match_score"] < 20:
+            debug["low_score"] += 1
+        else:
             it["days_left"] = d
             good.append(it)
-    good = [g for g in good if g["match_score"] >= 20]
     good.sort(key=lambda x: x["match_score"], reverse=True)
+
+    st.session_state["stats"] = {
+        "searches": len(queries),
+        "found": len(urls),
+        "read": len(all_pages),
+        "analysed": len(items),
+        "shown": len(good),
+    }
+    st.session_state["debug"] = debug
     return good
 
 # ---------- Web page ----------
@@ -147,9 +168,19 @@ if go:
 stats = st.session_state.get("stats")
 if stats:
     st.info(
-        f"TinyFish ran {stats['searches']} live searches, found {stats['found']} pages "
-        f"and read {stats['read']} of them for this result."
+        f"TinyFish ran {stats['searches']} live searches, found {stats['found']} pages and read {stats['read']}. "
+        f"Gemini analysed {stats['analysed']}, and {stats['shown']} matched you."
     )
+
+debug = st.session_state.get("debug")
+if debug:
+    with st.expander("Debug info"):
+        st.write(f"Not an opportunity: {debug['not_opportunity']}")
+        st.write(f"Expired: {debug['expired']}")
+        st.write(f"Low match (under 20): {debug['low_score']}")
+        st.write(f"Gemini errors: {len(debug['errors'])}")
+        for e in debug["errors"][:5]:
+            st.code(e)
 
 results = st.session_state.get("results")
 if results is not None:
