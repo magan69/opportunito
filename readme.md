@@ -112,8 +112,8 @@ The app opens in your browser at `http://localhost:8501`.
 
 ## Screenshots
 
-![Opportunito results](screenshot1.png)
-![Opportunito profile and search](screenshot2.png)
+![Opportunito results](Screenshot1.png)
+![Opportunito profile and search](Screenshot2.png)
 
 ## Design choices
 
