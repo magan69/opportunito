@@ -110,12 +110,10 @@ The app opens in your browser at `http://localhost:8501`.
 3. Wait 30-60 seconds while the app searches and reads pages.
 4. Review the ranked cards. Each shows the match score, deadline, eligibility, the reason for the match, and links to the source page.
 
-<!--
 ## Screenshots
 
 ![Opportunito results](screenshot1.png)
 ![Opportunito profile and search](screenshot2.png)
--->
 
 ## Design choices
 
