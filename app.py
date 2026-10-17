@@ -33,7 +33,7 @@ def days_left(deadline):
 
 def run_pipeline(p, progress):
     # 1. SEARCH (TinyFish)
-        queries = [
+    queries = [
         f"{p['course']} scholarship India {p['category']} category 2026-27 apply now last date",
         f"scholarship for {p['year']} year {p['course']} students India 2026 apply online",
         f"{p['state']} state government scholarship {p['category']} students 2026-27 apply",
@@ -51,7 +51,8 @@ def run_pipeline(p, progress):
             if r.url not in urls:
                 urls.append(r.url)
     urls = urls[:14]
-    progress.progress(0.25, text=f"Found {len(urls)} pages. Reading them...")
+    st.session_state["stats"] = {"searches": len(queries), "pages": len(urls)}
+    progress.progress(0.25, text=f"TinyFish Search found {len(urls)} live pages. Reading them with TinyFish Fetch...")
 
     # 2. FETCH (TinyFish)
     pages = tf.fetch.get_contents(urls=urls, format="markdown")
@@ -97,7 +98,7 @@ PAGE TEXT:
         time.sleep(2)  # stay within free limits
 
     # 4. Filter + rank
-        good = []
+    good = []
     for it in items:
         d = days_left(it["deadline"])
         if it["is_opportunity"] and (d is None or d >= 0):
@@ -110,7 +111,7 @@ PAGE TEXT:
 # ---------- Web page ----------
 st.set_page_config(page_title="Opportunito", page_icon="🎓")
 st.title("🎓 Opportunito")
-st.caption("Finds live scholarships and opportunities that fit you, powered by TinyFish Search + Fetch and Gemini.")
+st.caption("Your career helper: finds live scholarships and opportunities that fit you, powered by TinyFish Search + Fetch and Gemini.")
 
 with st.sidebar:
     st.header("Your profile")
@@ -124,12 +125,16 @@ with st.sidebar:
 
 if go:
     profile = dict(course=course, year=year, category=category, state=state, income=income, interests=interests)
-    progress = st.progress(0.0, text="Searching the live web...")
+    progress = st.progress(0.0, text="Searching the live web with TinyFish...")
     try:
         st.session_state["results"] = run_pipeline(profile, progress)
     except Exception as e:
         st.error(f"Something went wrong: {e}")
     progress.empty()
+
+stats = st.session_state.get("stats")
+if stats:
+    st.info(f"TinyFish ran {stats['searches']} live searches and fetched {stats['pages']} pages for this result.")
 
 results = st.session_state.get("results")
 if results is not None:
