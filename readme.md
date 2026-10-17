@@ -45,7 +45,7 @@ In the code, see `run_pipeline()` in `app.py`:
 
 ## How it works (flow)
 
-```
+```text
 Student profile
       |
       v
@@ -65,8 +65,8 @@ Expired items removed, results ranked, shown in the app
 
 **1. Clone the repo**
 ```
-git clone [your repo link]
-cd [your repo folder name]
+git clone https://github.com/magan69/opportunito.git
+cd opportunito
 ```
 
 **2. Create and activate a virtual environment**
@@ -110,10 +110,12 @@ The app opens in your browser at `http://localhost:8501`.
 3. Wait 30-60 seconds while the app searches and reads pages.
 4. Review the ranked cards. Each shows the match score, deadline, eligibility, the reason for the match, and links to the source page.
 
+<!--
 ## Screenshots
 
 ![Opportunito results](screenshot1.png)
 ![Opportunito profile and search](screenshot2.png)
+-->
 
 ## Design choices
 
@@ -125,4 +127,24 @@ The app opens in your browser at `http://localhost:8501`.
 ## Limitations
 
 - Results depend on what the search returns and which sites allow automated reading. Some pages fail to load and are skipped.
-- Gemini can make mistakes. Students should always confirm
+- Gemini can make mistakes. Students should always confirm details on the official page before applying.
+- Deadlines are only shown when the page states them.
+
+## Future work
+
+- **TinyFish Monitors** to alert students when a deadline or page changes.
+- Saved student profiles.
+- Email or WhatsApp reminders before deadlines.
+- Support for regional languages.
+
+## Author
+
+Magan Shandilya
+laxmeswaram krishnam
+shaurya bhatnagar
+shubham jaiswal
+University School of Information, Communication and Technology(GGSIPU)
+https://github.com/magan69
+
+Built for AZINHACK '26.
+
