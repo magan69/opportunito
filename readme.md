@@ -2,8 +2,8 @@
 
 **Your career helper.** Opportunito finds live scholarships and opportunities for Indian students, checks whether the student is actually eligible, and ranks them by fit.
 
-🎥 **Demo video:** [paste your video link here]
-📝 **Project post:** [paste your LinkedIn/X post link here]
+🎥 **Demo video:(https://drive.google.com/file/d/1TBUCMvzEHojcK6v8D-4fRGgG9-tM_Wc4/view?usp=sharing)
+📝 **Project post:(https://lnkd.in/p/gX4QtJVZ)
 
 ---
 
