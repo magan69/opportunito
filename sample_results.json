@@ -1,0 +1,46 @@
+[
+  {
+    "is_opportunity": true,
+    "title": "BTech Students Scholarship 2026-27",
+    "deadline": "2026-10-31",
+    "eligibility": "1st-year BTech students with family income below ₹8 lakh.",
+    "apply_link": "https://scholarships.gov.in",
+    "match_score": 90,
+    "match_reason": "The student meets the core eligibility criteria of being a 1st-year BTech student with a family income below the threshold for multiple active NSP and AICTE schemes.",
+    "source_url": "https://enggprep.in/btech-students-scholarship-2026-27/",
+    "days_left": 1
+  },
+  {
+    "is_opportunity": true,
+    "title": "Bharti Airtel Scholarship Program",
+    "deadline": null,
+    "eligibility": "First-year undergraduate or 5-year integrated engineering/tech students at top 50 NIRF-ranked institutes with family income below INR 8 lakh.",
+    "apply_link": "https://bhartiairtelfoundation.org/bharti-airtel-scholarship",
+    "match_score": 90,
+    "match_reason": "The student meets the course, year, and income criteria, provided their institution is among the top 50 NIRF-ranked engineering universities.",
+    "source_url": "https://bhartiairtelfoundation.org/bharti-airtel-scholarship",
+    "days_left": null
+  },
+  {
+    "is_opportunity": true,
+    "title": "Scholarships for Engineering Students in India",
+    "deadline": null,
+    "eligibility": "Engineering students in India with varying criteria including family income limits, academic merit, or specific circumstances like disability or state residency.",
+    "apply_link": null,
+    "match_score": 85,
+    "match_reason": "The page lists several scholarships, such as the Central Sector Scheme and the Bharti Airtel Scholarship, that are highly relevant to a 1st-year B.Tech Computer Science student with the student's income level.",
+    "source_url": "https://www.buddy4study.com/article/scholarships-for-engineering-students-in-india",
+    "days_left": null
+  },
+  {
+    "is_opportunity": true,
+    "title": "National Scholarship Portal 2026-27",
+    "deadline": "2026-10-31",
+    "eligibility": "Covers various categories including OBC, EBC, DNT, SC, ST, students with disabilities, and wards of Railways, CAPF, or Police personnel.",
+    "apply_link": "https://scholarships.gov.in",
+    "match_score": 30,
+    "match_reason": "The student is in the General category, while the specific schemes highlighted on the portal primarily target reserved categories and specific service wards.",
+    "source_url": "https://www.shiksha.com/college/articles/national-scholarship-portal-2026-27-list-of-schemes-eligibility-amount-last-date-and-apply-online-blogId-240815",
+    "days_left": 1
+  }
+]

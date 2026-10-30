@@ -138,11 +138,8 @@ The app opens in your browser at `http://localhost:8501`.
 ## Author
 
 Magan Shandilya
-laxmeswaram krishnam
-shaurya bhatnagar
-shubham jaiswal
 University School of Information, Communication and Technology(GGSIPU)
 https://github.com/magan69
 
-Built for AZINHACK '26.
+Built for HACTOBERFEST HACKATHON.
 
