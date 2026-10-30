@@ -40,7 +40,7 @@ In the code, see `run_pipeline()` in `app.py`:
 - Python
 - Streamlit (web interface)
 - TinyFish Search and Fetch APIs
-- Google Gemini (extraction and matching)
+- Gemma 4 (extraction and matching)
 - Pydantic (structured output)
 
 ## How it works (flow)
