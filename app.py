@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import Optional
 from dotenv import load_dotenv
 load_dotenv()
+import re
 
 import streamlit as st
 from pydantic import BaseModel, Field
@@ -22,6 +23,7 @@ class Opportunity(BaseModel):
 
 tf = TinyFish()
 gemini = genai.Client(api_key=os.getenv("LLM_API_KEY"))
+MODEL = "gemma-4-26b-a4b-it"
 
 def days_left(deadline):
     if not deadline:
@@ -42,12 +44,17 @@ def search_one(query):
         return []
 
 def analyse_page(url, text, profile_text):
-    """Ask Gemini about one page. Retries briefly if the rate limit is hit."""
+    """Ask Gemma 4 about one page and parse the JSON it returns."""
     prompt = f"""Today's date is {date.today()}.
-Extract the opportunity details from this web page and score how well it fits the student.
-If the page is not about an opportunity students can apply to, set is_opportunity to false.
-If eligibility clearly excludes the student (income, course, year, category), give a low score.
-Only give a deadline if the page states one. Never guess.
+Read this web page and score how well it fits the student.
+Reply with ONLY one JSON object, no markdown and no extra text, with exactly these keys:
+is_opportunity (true or false: a specific scholarship, internship, fellowship or competition students can apply to),
+title (string),
+deadline (YYYY-MM-DD, or null if the page does not state one. Never guess),
+eligibility (one or two sentences),
+apply_link (string or null),
+match_score (integer 0-100; low if the student clearly does not qualify),
+match_reason (one sentence).
 
 STUDENT PROFILE: {profile_text}
 
@@ -58,15 +65,9 @@ PAGE TEXT:
     last_error = None
     for attempt in range(3):
         try:
-            response = gemini.models.generate_content(
-                model="gemini-3.5-flash-lite",
-                contents=prompt,
-                config={
-                    "response_mime_type": "application/json",
-                    "response_schema": Opportunity,
-                },
-            )
-            item = Opportunity.model_validate_json(response.text)
+            response = gemini.models.generate_content(model=MODEL, contents=prompt)
+            found = re.search(r"\{.*\}", response.text, re.DOTALL)
+            item = Opportunity.model_validate_json(found.group(0))
             data = item.model_dump()
             data["source_url"] = url
             return data, None
@@ -155,7 +156,7 @@ def run_pipeline(p, progress):
 # ---------- Web page ----------
 st.set_page_config(page_title="Opportunito", page_icon="🎓")
 st.title("🎓 Opportunito")
-st.caption("Your career helper: finds live scholarships and opportunities that fit you, powered by TinyFish Search + Fetch and Gemini.")
+st.caption("Your career helper: finds live scholarships and opportunities that fit you, powered by TinyFish Search + Fetch and Gemma 4.")
 
 with st.sidebar:
     st.header("Your profile")
